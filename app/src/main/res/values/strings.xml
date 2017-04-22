@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">LazySnapping-Android</string>
+    <string name="action_settings">选择图片</string>
+</resources>
