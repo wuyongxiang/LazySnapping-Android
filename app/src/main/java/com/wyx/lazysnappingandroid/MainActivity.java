@@ -1,5 +1,6 @@
 package com.wyx.lazysnappingandroid;
 
+import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -27,7 +28,9 @@ import android.widget.Toast;
 
 import com.wyx.lazysnapping_android.R;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -39,7 +42,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public static final int HANDELER_SETBITMAP = 0x21;
     public static final int HANDELER_CLEARBITMAP = 0x22;
-
     public static final int HANDELER_fINUISHBITMAP = 0x23;
     private FloatingActionButton fab_finish,fab_clear,fab_green_paint,fab_blue_paint;
 
@@ -54,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ArrayList<PointF> greenPoints = new ArrayList<PointF>();
     private ArrayList<PointF> redPoints = new ArrayList<PointF>();
 
+    protected ProgressDialog pg = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,9 +68,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
     private void finishView() {
+        pg.dismiss();
         greenPoints.clear();
         redPoints.clear();
         cropView.setImageBitmap(returnBitmap);
+        Date currentdate = new java.util.Date();
+        String url= currentdate.getTime()+".png";
+        try {
+            FileUtil.saveBitmap(this,returnBitmap,url);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     private void drawView() {
@@ -142,6 +153,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         fab_green_paint.setOnClickListener(this);
         fab_clear.setOnClickListener(this);
         helper = new LazySnappingHelper();
+        pg = new ProgressDialog(this, R.style.ccpalertdialog);
+        pg.setCanceledOnTouchOutside(false);
+        pg.setMessage(getString(R.string.loading));
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -224,8 +238,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     drawView();
                     break;
                 case HANDELER_fINUISHBITMAP:
-
                     finishView();
+                    pg.dismiss();
+
+
+
                     break;
             }
 
@@ -233,36 +250,45 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     };
 
+    private void snapView(){
+
+        int size1 = greenPoints.size();
+        int size2 = redPoints.size();
+        float[] w1 = new float[size1];
+        float[] h1 = new float[size1];
+        float[] w2 = new float[size2];
+        float[] h2 = new float[size2];
+
+        for(int i = 0; i<size1 ; i++){
+            w1[i] = greenPoints.get(i).x;
+            h1[i] = greenPoints.get(i).y;
+        }
+        for(int i = 0; i<size2 ; i++){
+            w2[i] = redPoints.get(i).x;
+            h2[i] = redPoints.get(i).y;
+        }
+        int w = baseBitmap.getWidth(), h = baseBitmap.getHeight();
+        int[] pix = new int[w * h];
+        baseBitmap.getPixels(pix, 0, w, 0, 0, w, h);
+        int [] resultPixes= helper.getSnappedPic(pix,w,h,w1,h1,w2,h2);
+        returnBitmap = Bitmap.createBitmap(w,h, Bitmap.Config.ARGB_8888);
+        returnBitmap.setPixels(resultPixes, 0, w, 0, 0,w, h);
+    }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.fab_finish:
-                int size1 = greenPoints.size();
-                int size2 = redPoints.size();
-                float[] w1 = new float[size1];
-                float[] h1 = new float[size1];
-                float[] w2 = new float[size2];
-                float[] h2 = new float[size2];
+                pg.show();
+                new Thread(){
+                    @Override
+                    public void run() {
+                        pg.show();
+                        snapView();
+                        mHandler.sendEmptyMessage(HANDELER_fINUISHBITMAP);
 
-                for(int i = 0; i<size1 ; i++){
-                    w1[i] = greenPoints.get(i).x;
-                    h1[i] = greenPoints.get(i).y;
-                }
-                for(int i = 0; i<size2 ; i++){
-                    w2[i] = redPoints.get(i).x;
-                    h2[i] = redPoints.get(i).y;
-                }
-                int w = baseBitmap.getWidth(), h = baseBitmap.getHeight();
-                int[] pix = new int[w * h];
-                baseBitmap.getPixels(pix, 0, w, 0, 0, w, h);
-                int [] resultPixes= helper.getSnappedPic(pix,w,h,w1,h1,w2,h2);
-//                int [] resultPixes= helper.gray(pix,w,h);
-                returnBitmap = Bitmap.createBitmap(w,h, Bitmap.Config.ARGB_8888);
-                returnBitmap.setPixels(resultPixes, 0, w, 0, 0,w, h);
-                mHandler.sendEmptyMessage(HANDELER_fINUISHBITMAP);
-
-//                Toast.makeText(this,helper.stringFromJNI(),Toast.LENGTH_SHORT).show();
+                    }
+                }.start();
 
                 break;
             case R.id.fab_clear:
@@ -277,4 +303,5 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
         }
     }
+
 }

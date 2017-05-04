@@ -1,4 +1,4 @@
-set(pathToProject C:\\LazySnapping-Android)
+set(pathToProject C:\\Users\\wuyongxiang\\Documents\\LazySnapping-Android)
 set(pathToOpenCv C:\\OpenCV-android-sdk)
 
 cmake_minimum_required(VERSION 3.6.0)

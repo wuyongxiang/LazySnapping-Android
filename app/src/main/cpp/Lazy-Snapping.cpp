@@ -14,14 +14,14 @@ LazySnapping_Self::~LazySnapping_Self()
 }
 
 void LazySnapping_Self::InitLazySnapping(vector<Point>& forPts,vector<Point>& bacPts,Mat& img)
-{  
+{
 	int i;
 	//取得原图像相关信息
 	m_pSrc=img.data;
 	m_Step=img.step;
 
 	m_Width=img.cols;
-    m_Height=img.rows;
+	m_Height=img.rows;
 	//指定点数目和边数目
 	m_graph=new GraphType_Self(m_Width*m_Height,m_Width*m_Height*2);
 
@@ -83,10 +83,10 @@ bool LazySnapping_Self::isPtInVector(Point pt, vector<Point>& points)
 }
 
 void LazySnapping_Self::Run()
-{   
+{
 	int i,j;
 	m_kMeans=new SimpleKmeans(Self_Dims,Self_K);
-    float **avgColor;
+	float **avgColor;
 	avgColor=new float*[Self_K];
 	for(i=0;i<Self_K;i++)
 		avgColor[i]=new float[3];
@@ -104,7 +104,7 @@ void LazySnapping_Self::Run()
 	}
 	RunMaxFlow();   //执行
 	//释放空间
-    delete m_kMeans;
+	delete m_kMeans;
 	for(i=0;i<Self_K;i++)
 		delete[] avgColor[i];
 	delete[] avgColor;
@@ -114,15 +114,15 @@ void LazySnapping_Self::Run()
 float LazySnapping_Self::colorDistance(unsigned char* color1,unsigned char* color2)
 {
 	return sqrt(float((color1[0]-color2[0])*(color1[0]-color2[0])+
-		              (color1[1]-color2[1])*(color1[1]-color2[1])+         
-		              (color1[2]-color2[2])*(color1[2]-color2[2])));
+					  (color1[1]-color2[1])*(color1[1]-color2[1])+
+					  (color1[2]-color2[2])*(color1[2]-color2[2])));
 }
 
 float LazySnapping_Self::Distance(unsigned char* color1,unsigned char* color2)
 {
 	return float((color1[0]-color2[0])*(color1[0]-color2[0])+
-		         (color1[1]-color2[1])*(color1[1]-color2[1])+         
-		         (color1[2]-color2[2])*(color1[2]-color2[2]));
+				 (color1[1]-color2[1])*(color1[1]-color2[1])+
+				 (color1[2]-color2[2])*(color1[2]-color2[2]));
 }
 
 float LazySnapping_Self::minDistance(unsigned char* color1,unsigned char** bfColor)
@@ -150,8 +150,8 @@ void LazySnapping_Self::GetE1(unsigned char* color,float* energy)
 float LazySnapping_Self::GetE2(unsigned char* color,unsigned char* color2)
 {
 	float dis=colorDistance(color,color2);
-    float d1 = ScaleFactor*1;
-    float d2 = 1+dis;
+	float d1 = ScaleFactor*1;
+	float d2 = 1+dis;
 	return d1/d2;
 }
 
@@ -193,25 +193,33 @@ void LazySnapping_Self::RunMaxFlow()
 	}
 	m_graph->maxflow();  //分割
 }
-
 void LazySnapping_Self::GetImageMask(Mat& mask)
-{   
+{
 	if (!mask.data)
 	{
-      mask=Mat::zeros(m_Height,m_Width,CV_8UC1);
+		mask=Mat::zeros(m_Height,m_Width,CV_8UC1);
 	}
 	int indexpt=0;
 	int i,j;
+	int num = m_Height*m_Width;
 	for(i=0;i<m_Height;i++)
 	{
 		unsigned char* p=mask.ptr<uchar>(i);
+//		unsigned char* p1=mask.ptr<uchar>(i*4+1);
+//		unsigned char* p2=mask.ptr<uchar>(i*4+2);
 		for(j=0;j<m_Width;j++)
 		{
-            if (m_graph->what_segment(indexpt) == GraphType_Self::SOURCE){
+			if (m_graph->what_segment(indexpt) == GraphType_Self::SOURCE){
                 *p = 0;
-            }else{
+			}else{
                 *p = 255;
-            }
+
+
+//				int grayScale = (int)(*p2*0.299 + *p1*0.587 + *p*0.114);
+//				*p1 = grayScale;
+//				*p2 = grayScale;
+//				*p = grayScale;
+			}
 			p++;
 			indexpt++;
 		}
@@ -220,8 +228,8 @@ void LazySnapping_Self::GetImageMask(Mat& mask)
 }
 
 void LazySnapping_Self::Dispose()
-{   
-    m_forePts.clear();
+{
+	m_forePts.clear();
 	m_backPts.clear();
 	for(int i=0;i<Self_K;i++)
 	{

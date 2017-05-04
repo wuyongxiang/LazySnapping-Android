@@ -3,6 +3,7 @@ package com.wyx.lazysnappingandroid;
 import android.annotation.SuppressLint;
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.media.ExifInterface;
@@ -16,11 +17,13 @@ import android.view.View;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 public class FileUtil {
+	public static final String ScanImgPath = FileUtil.getSDPath() + java.io.File.separator + "Lazysanp_scanimg/";
 	/*** 获取sd卡的路径 @return 路径的字符串*/
 	public static String getSDPath() {
 		File sdDir = null;
@@ -51,6 +54,30 @@ public class FileUtil {
 		file.renameTo(newFile);
 	}
 
+	public static void saveBitmap(Context context ,Bitmap bmp,String savedname) throws FileNotFoundException {
+
+		FileOutputStream b = null;
+		String IMG_PATH = ScanImgPath;
+		File path = new File(IMG_PATH);
+		if(savedname.contains(ScanImgPath)){
+			b = new FileOutputStream(new File(savedname));
+		}else{
+			if (!path.exists()) {path.mkdirs();}
+			b = new FileOutputStream(new File(IMG_PATH, savedname));
+		}
+		bmp.compress(Bitmap.CompressFormat.PNG, 100, b);// 把数据写入文件
+		MediaStore.Images.Media.insertImage(context.getContentResolver(), path.getAbsolutePath(), savedname, null);
+		context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + path)));
+
+		try {
+			b.flush();
+			b.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+
+	}
 
 	/**
 	 * 复制单个文件
