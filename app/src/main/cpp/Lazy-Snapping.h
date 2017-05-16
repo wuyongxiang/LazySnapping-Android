@@ -22,8 +22,8 @@ class LazySnapping_Self
 private:
 	vector<Point> m_forePts;      //保存前景点
 	vector<Point> m_backPts;      //保存背景点
-	float** m_foreColor;          //从背景点存储背景颜色
-	float** m_backColor;          //从前景点存储前景颜色
+	float** m_foreColor;          //从前景点存储背景颜色
+	float** m_backColor;          //从背景点存储前景颜色
 
 	uchar** m_avgForColor;        //KMeans得到的平均前景颜色
 	uchar** m_avgBacColor;        //KMeans得到的平均背景颜色

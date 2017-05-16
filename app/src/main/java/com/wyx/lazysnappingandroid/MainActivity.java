@@ -105,12 +105,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                         break;
                     case MotionEvent.ACTION_MOVE:
-                        // 获取手移动后的坐标
                         int stopX = (int) event.getX();
                         int stopY = (int) event.getY();
-                        // 在开始和结束坐标间画一条线
                         canvas.drawLine(startX, startY, stopX, stopY, getPaint());
-                        // 实时更新开始坐标
                         startX = (int) event.getX();
                         startY = (int) event.getY();
                         PointF pm = new PointF(event.getX()-bw, event.getY()-bh);

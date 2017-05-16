@@ -205,20 +205,12 @@ void LazySnapping_Self::GetImageMask(Mat& mask)
 	for(i=0;i<m_Height;i++)
 	{
 		unsigned char* p=mask.ptr<uchar>(i);
-//		unsigned char* p1=mask.ptr<uchar>(i*4+1);
-//		unsigned char* p2=mask.ptr<uchar>(i*4+2);
 		for(j=0;j<m_Width;j++)
 		{
 			if (m_graph->what_segment(indexpt) == GraphType_Self::SOURCE){
                 *p = 0;
 			}else{
                 *p = 255;
-
-
-//				int grayScale = (int)(*p2*0.299 + *p1*0.587 + *p*0.114);
-//				*p1 = grayScale;
-//				*p2 = grayScale;
-//				*p = grayScale;
 			}
 			p++;
 			indexpt++;
